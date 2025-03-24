@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-void unrecognized(Lexer *lexer, char character) {
+static void unrecognized(Lexer *lexer, char character) {
   if (isprint(character)) {
     fprintf(stderr, "Unrecognized character at %d in %s: %c\n", lexer->line,
             lexer->filename, character);
@@ -17,13 +17,13 @@ void unrecognized(Lexer *lexer, char character) {
   }
 }
 
-char advance(Lexer *lexer) {
+static char advance(Lexer *lexer) {
   // Function fot increment lexer->current and return character
   lexer->current++;
   return lexer->source[lexer->current - 1];
 }
 
-char peek(Lexer *lexer, int index) {
+static char peek(Lexer *lexer, int index) {
   if (lexer == NULL || lexer->source == NULL) {
     return '\0'; // Return null character if lexer or source is invalid
   }
@@ -43,7 +43,7 @@ char peek(Lexer *lexer, int index) {
 bool is_end(Lexer *lexer) { return peek(lexer, 0) == '\0'; }
 
 // match: return true if current char is equal to expected char
-bool match(Lexer *lexer, char expected) {
+static bool match(Lexer *lexer, char expected) {
   if (is_end(lexer)) {
     return 0;
   }
@@ -54,7 +54,7 @@ bool match(Lexer *lexer, char expected) {
   return false;
 }
 
-Token create_token(Lexer *lexer, TokenType type, char *lexeme) {
+static Token create_token(Lexer *lexer, TokenType type, char *lexeme) {
   // Adding token to Token_List
   return (Token){type, lexeme};
 }
@@ -87,6 +87,20 @@ static void skip_whitespaces(Lexer *lexer) {
   }
 }
 
+static Token number(Lexer *lexer) {
+  while (isdigit(peek(lexer, 0)))
+    advance(lexer);
+
+  if (peek(lexer, 0) == '.' && isdigit(peek(lexer, 1))) {
+    advance(lexer);
+
+    while (isdigit(peek(lexer, 0)))
+      advance(lexer);
+  }
+
+  return create_token(lexer, T_INT_LITERAL, NULL);
+}
+
 void init_lexer(Lexer *lexer, char *code, char *from_file) {
   // Initialize lexer
   lexer->filename = from_file;
@@ -103,7 +117,12 @@ void lex(Lexer *lexer) {
   }
   while (!is_end(lexer) && !lexer->had_error) {
     skip_whitespaces(lexer);
-    switch (advance(lexer)) {
+    char c = advance(lexer);
+    if (isdigit(c)) {
+      add_token(&lexer->tokens, number(lexer));
+      continue;
+    }
+    switch (c) {
     case '+':
       add_token(&lexer->tokens, create_token(lexer, T_PLUS, "+"));
       break;
