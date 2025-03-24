@@ -1,0 +1,7 @@
+// prints program name
+
+fn main(str args[]) : int {
+    str s = args[1];
+    println("\[n]");
+    ret 0;
+}
