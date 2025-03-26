@@ -34,4 +34,5 @@ typedef struct Token_List {
 void init_tokenlist(Token_List *tokenlist);
 void add_token(Token_List *tokenlist, Token token);
 void free_tokenlist(Token_List *tokenlist);
+void free_token(Token *token);
 #endif

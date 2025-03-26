@@ -6,4 +6,4 @@ CC = gcc
 $(TARGET): main.o
 
 main.o:
-	$(CC) main.c lexer/lexer.c lexer/token.c -o hgh
+	$(CC) -g -Wall main.c lexer/lexer.c lexer/token.c -o hgh

@@ -1,4 +1,5 @@
 #include "lexer/lexer.h"
+#include "logging.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -46,11 +47,11 @@ int main(int argc, char *argv[]) {
   lex(&lexer);
 
   // Print results
-  printf("\n\nfile: %s\n", lexer.filename);
-  printf("source: \n%s\n", lexer.source);
-  printf("tokens:\n");
+  L_INFO("file: %s\n", lexer.filename);
+  L_INFO("source: \n%s\n", lexer.source);
+  L_INFO("tokens:\n");
   for (int i = 0; i < lexer.tokens.length; i++) {
-    printf("\t%d(%s)\n", lexer.tokens.tokens[i].type,
+    printf("\t%d(\"%s\")\n", lexer.tokens.tokens[i].type,
            lexer.tokens.tokens[i].lexeme);
   }
 

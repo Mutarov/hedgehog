@@ -1,5 +1,6 @@
 // Implemetation of lexer.h
 #include "lexer.h"
+#include "../logging.h"
 #include "token.h"
 #include <ctype.h>
 #include <stdbool.h>
@@ -9,12 +10,17 @@
 
 static void unrecognized(Lexer *lexer, char character) {
   if (isprint(character)) {
-    fprintf(stderr, "Unrecognized character at %d in %s: %c\n", lexer->line,
+    L_ERROR("Unrecognized character at %d in %s: %c\n", lexer->line,
             lexer->filename, character);
     lexer->had_error = true;
   } else {
     lexer->had_error = true;
   }
+}
+
+static void error(Lexer *lexer, char *message) {
+  L_ERROR("Error at %d in %s: %s\n", lexer->line, lexer->filename, message);
+  lexer->had_error = true;
 }
 
 static char advance(Lexer *lexer) {
@@ -54,9 +60,22 @@ static bool match(Lexer *lexer, char expected) {
   return false;
 }
 
-static Token create_token(Lexer *lexer, TokenType type, char *lexeme) {
-  // Adding token to Token_List
-  return (Token){type, lexeme};
+static Token create_token(TokenType type, const char *lexeme) {
+  Token token;
+  token.type = type;
+
+  // Гарантируем, что lexeme не NULL и не мусор
+  const char *safe_lexeme = lexeme ? lexeme : "(null)";
+  token.lexeme = strdup(safe_lexeme);
+
+  // Проверка успешности strdup
+  if (!token.lexeme) {
+    // В случае ошибки выделения памяти
+    token.lexeme = strdup("(alloc error)");
+    token.type = type;
+  }
+
+  return token;
 }
 
 static void skip_whitespaces(Lexer *lexer) {
@@ -88,17 +107,46 @@ static void skip_whitespaces(Lexer *lexer) {
 }
 
 static Token number(Lexer *lexer) {
-  while (isdigit(peek(lexer, 0)))
-    advance(lexer);
+  char buffer[64];
+  int pos = 1;
 
-  if (peek(lexer, 0) == '.' && isdigit(peek(lexer, 1))) {
-    advance(lexer);
+  buffer[0] = peek(lexer, -1);
 
-    while (isdigit(peek(lexer, 0)))
-      advance(lexer);
+  while (isdigit(peek(lexer, 0)) && pos < 31) {
+    buffer[pos++] = advance(lexer);
   }
 
-  return create_token(lexer, T_INT_LITERAL, NULL);
+  if (peek(lexer, 0) == '.' && isdigit(peek(lexer, 1))) {
+    buffer[pos++] = advance(lexer);
+    while (isdigit(peek(lexer, 0)) && pos < 31) {
+      buffer[pos++] = advance(lexer);
+    }
+  }
+
+  buffer[pos] = '\0';
+
+  return create_token(T_INT_LITERAL, buffer);
+}
+
+static Token string(Lexer *lexer) {
+    char buffer[256];
+    int pos = 0;
+
+    while (peek(lexer, 0) != '"' && !is_end(lexer) && pos < 255) {
+        char c = peek(lexer, 0);
+        buffer[pos++] = c;
+        advance(lexer);
+    }
+
+    if (is_end(lexer)) {
+        error(lexer, "Unterminated string literal");
+        return create_token(T_STR_LITERAL, "(null)");
+    }
+
+    advance(lexer); 
+
+    buffer[pos] = '\0';
+    return create_token(T_STR_LITERAL, buffer);
 }
 
 void init_lexer(Lexer *lexer, char *code, char *from_file) {
@@ -124,25 +172,40 @@ void lex(Lexer *lexer) {
     }
     switch (c) {
     case '+':
-      add_token(&lexer->tokens, create_token(lexer, T_PLUS, "+"));
+      add_token(&lexer->tokens, create_token(T_PLUS, "+"));
       break;
     case '-':
-      add_token(&lexer->tokens, create_token(lexer, T_MINUS, "-"));
+      add_token(&lexer->tokens, create_token(T_MINUS, "-"));
       break;
     case '*':
-      add_token(&lexer->tokens, create_token(lexer, T_STAR, "*"));
+      add_token(&lexer->tokens, create_token(T_STAR, "*"));
       break;
     case '/':
-      add_token(&lexer->tokens, create_token(lexer, T_SLASH, "/"));
+      add_token(&lexer->tokens, create_token(T_SLASH, "/"));
       break;
     case ';':
-      add_token(&lexer->tokens, create_token(lexer, T_SEMICOLON, ";"));
+      add_token(&lexer->tokens, create_token(T_SEMICOLON, ";"));
+      break;
+    case '"':
+      add_token(&lexer->tokens, string(lexer));
       break;
     case '.':
-      add_token(&lexer->tokens, create_token(lexer, T_DOT, "."));
+      add_token(&lexer->tokens, create_token(T_DOT, "."));
       break;
     case ',':
-      add_token(&lexer->tokens, create_token(lexer, T_COMMA, ","));
+      add_token(&lexer->tokens, create_token(T_COMMA, ","));
+      break;
+    case '(':
+      add_token(&lexer->tokens, create_token(T_LPAREN, "("));
+      break;
+    case '{':
+      add_token(&lexer->tokens, create_token(T_LBRACE, "{"));
+      break;
+    case ')':
+      add_token(&lexer->tokens, create_token(T_RPAREN, ")"));
+      break;
+    case '}':
+      add_token(&lexer->tokens, create_token(T_RBRACE, "}"));
       break;
     default:
       unrecognized(lexer, peek(lexer, -1));
