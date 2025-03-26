@@ -10,7 +10,10 @@ typedef enum {
   T_RPAREN,      // )
   T_LBRACE,      // {
   T_RBRACE,      // }
+  T_LSBRACE,     // [
+  T_RSBRACE,     // ]
   T_SEMICOLON,   // ;
+  T_COLON,       // :
   T_COMMA,       // ,
   T_DOT,         // .
   T_IDENTIFIER,  // some_var
@@ -24,15 +27,15 @@ typedef struct Token {
   char *lexeme;
 } Token;
 
-typedef struct Token_List {
+typedef struct {
   Token *tokens;
-  int length;
+  int used;
   int capacity;
-} Token_List;
+} TokenList;
 
-// INFO: Functions for Token_List
-void init_tokenlist(Token_List *tokenlist);
-void add_token(Token_List *tokenlist, Token token);
-void free_tokenlist(Token_List *tokenlist);
+// INFO: Functions for TokenList
+void init_tokenlist(TokenList *tokenlist);
+void add_token(TokenList *tokenlist, Token token);
+void free_tokenlist(TokenList *tokenlist);
 void free_token(Token *token);
 #endif

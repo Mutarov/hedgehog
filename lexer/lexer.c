@@ -129,24 +129,24 @@ static Token number(Lexer *lexer) {
 }
 
 static Token string(Lexer *lexer) {
-    char buffer[256];
-    int pos = 0;
+  char buffer[256];
+  int pos = 0;
 
-    while (peek(lexer, 0) != '"' && !is_end(lexer) && pos < 255) {
-        char c = peek(lexer, 0);
-        buffer[pos++] = c;
-        advance(lexer);
-    }
+  while (peek(lexer, 0) != '"' && !is_end(lexer) && pos < 255) {
+    char c = peek(lexer, 0);
+    buffer[pos++] = c;
+    advance(lexer);
+  }
 
-    if (is_end(lexer)) {
-        error(lexer, "Unterminated string literal");
-        return create_token(T_STR_LITERAL, "(null)");
-    }
+  if (is_end(lexer)) {
+    error(lexer, "Unterminated string literal");
+    return create_token(T_STR_LITERAL, "(null)");
+  }
 
-    advance(lexer); 
+  advance(lexer);
 
-    buffer[pos] = '\0';
-    return create_token(T_STR_LITERAL, buffer);
+  buffer[pos] = '\0';
+  return create_token(T_STR_LITERAL, buffer);
 }
 
 void init_lexer(Lexer *lexer, char *code, char *from_file) {
@@ -186,6 +186,9 @@ void lex(Lexer *lexer) {
     case ';':
       add_token(&lexer->tokens, create_token(T_SEMICOLON, ";"));
       break;
+    case ':':
+      add_token(&lexer->tokens, create_token(T_COLON, ":"));
+      break;
     case '"':
       add_token(&lexer->tokens, string(lexer));
       break;
@@ -207,6 +210,11 @@ void lex(Lexer *lexer) {
     case '}':
       add_token(&lexer->tokens, create_token(T_RBRACE, "}"));
       break;
+    case '[':
+      add_token(&lexer->tokens, create_token(T_LSBRACE, "["));
+      break;
+    case ']':
+      add_token(&lexer->tokens, create_token(T_RSBRACE, "]"));
     default:
       unrecognized(lexer, peek(lexer, -1));
       break; // TODO: Add Syntax Errors

@@ -7,7 +7,7 @@ typedef struct Lexer {
   int current;
   char *source;
   char *filename;
-  Token_List tokens;
+  TokenList tokens;
   int line;
   bool had_error;
 } Lexer;

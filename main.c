@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
   L_INFO("file: %s\n", lexer.filename);
   L_INFO("source: \n%s\n", lexer.source);
   L_INFO("tokens:\n");
-  for (int i = 0; i < lexer.tokens.length; i++) {
+  for (int i = 0; i < lexer.tokens.used; i++) {
     printf("\t%d(\"%s\")\n", lexer.tokens.tokens[i].type,
            lexer.tokens.tokens[i].lexeme);
   }
