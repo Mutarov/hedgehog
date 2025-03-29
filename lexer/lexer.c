@@ -149,13 +149,80 @@ static Token string(Lexer *lexer) {
   return create_token(T_STR_LITERAL, buffer);
 }
 
-void init_lexer(Lexer *lexer, char *code, char *from_file) {
-  // Initialize lexer
-  lexer->filename = from_file;
-  init_tokenlist(&lexer->tokens);
-  lexer->source = code;
-  lexer->current = lexer->line = 0;
-  lexer->had_error = false;
+static TokenType identifierType(Lexer* lexer) {
+    const char* start = lexer->source + lexer->current;
+    int length = 0;
+    
+    // Calculate length by walking backward from current position
+    while (start > lexer->source) {
+        char c = *(start - 1);
+        if (!isalpha(c) && !isdigit(c) && c != '_') break;
+        start--;
+        length++;
+    }
+    
+    // Keyword lookup table (sorted by frequency for optimization)
+    static const struct {
+        const char* word;
+        TokenType type;
+    } keywords[] = {
+        {"fn", T_FN},
+        {"str", T_STR},
+        {"int", T_INT},
+        {"ret", T_RET},
+        {"for", T_FOR},
+        {"let", T_LET},
+        {"if", T_IF},
+        {"else", T_ELSE},
+        {"while", T_WHILE},
+        {"print", T_PRINT},
+        {"class", T_CLASS},
+        {"super", T_SUPER},
+        {"this", T_THIS},
+        {"true", T_TRUE},
+        {"false", T_FALSE},
+        {"nil", T_NIL},
+        {"and", T_AND},
+        {"or", T_OR}
+    };
+    
+    // Binary search through keywords
+    int low = 0;
+    int high = sizeof(keywords)/sizeof(keywords[0]) - 1;
+    
+    while (low <= high) {
+        int mid = (low + high)/2;
+        int cmp = strncmp(start, keywords[mid].word, length);
+        
+        if (cmp == 0 && keywords[mid].word[length] == '\0') {
+            return keywords[mid].type;
+        }
+        if (cmp < 0 || (cmp == 0 && length < strlen(keywords[mid].word))) {
+            high = mid - 1;
+        } else {
+            low = mid + 1;
+        }
+    }
+    
+    return T_IDENTIFIER;
+}
+
+static Token identifier(Lexer *lexer) {
+    const char* start = lexer->source + lexer->current - 1;
+    
+    while (isalpha(peek(lexer, 0)) || isdigit(peek(lexer, 0)) || peek(lexer, 0) == '_') {
+        advance(lexer);
+    }
+    
+    // Calculate length
+    int length = lexer->source + lexer->current - start;
+    
+    // Create token with actual lexeme
+    char* lexeme = strndup(start, length);
+    Token token = create_token(identifierType(lexer), lexeme);
+    free(lexeme);
+    
+    return token;
 }
 
 void lex(Lexer *lexer) {
@@ -215,11 +282,56 @@ void lex(Lexer *lexer) {
       break;
     case ']':
       add_token(&lexer->tokens, create_token(T_RSBRACE, "]"));
+      break;
+    case '=':
+      if (peek(lexer, 1) == '=') {
+        add_token(&lexer->tokens, create_token(T_EQUAL, "=="));
+        advance(lexer);
+      } else {
+        add_token(&lexer->tokens, create_token(T_EQUAL, "="));
+      }
+      break;
+    case '!':
+      if (peek(lexer, 1) == '=') {
+        add_token(&lexer->tokens, create_token(T_NOT_EQUAL, "!="));
+        advance(lexer);
+      }
+      break;
+    case '>':
+      if (peek(lexer, 1) == '=') {
+        add_token(&lexer->tokens, create_token(T_GREATER_THAN_OR_EQUAL, ">="));
+        advance(lexer);
+      } else {
+        add_token(&lexer->tokens, create_token(T_GREATER_THAN, ">"));
+      }
+      break;
+    case '<':
+      if (peek(lexer, 1) == '=') {
+        add_token(&lexer->tokens, create_token(T_LESS_THAN_OR_EQUAL, "<="));
+        advance(lexer);
+      } else {
+        add_token(&lexer->tokens, create_token(T_LESS_THAN, "<"));
+      }
+      
+      break;
     default:
+      if (isalpha(c) || c == '_') {
+        add_token(&lexer->tokens, identifier(lexer));
+        continue;
+      }
       unrecognized(lexer, peek(lexer, -1));
       break; // TODO: Add Syntax Errors
     }
   }
+}
+
+void init_lexer(Lexer *lexer, char *code, char *from_file) {
+  // Initialize lexer
+  lexer->filename = from_file;
+  init_tokenlist(&lexer->tokens);
+  lexer->source = code;
+  lexer->current = lexer->line = 0;
+  lexer->had_error = false;
 }
 
 void free_lexer(Lexer *lexer) {

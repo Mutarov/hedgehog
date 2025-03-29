@@ -1,7 +1,6 @@
 #ifndef token_h
 #define token_h
 typedef enum {
-  T_KEYWORD,     // T_KEYWORD(lexeme: "for")
   T_PLUS,        // +
   T_SLASH,       // /
   T_STAR,        // *
@@ -19,10 +18,36 @@ typedef enum {
   T_IDENTIFIER,  // some_var
   T_STR_LITERAL, // "Sosal?"
   T_INT_LITERAL, // 5
-  T_EOF          // End of File
+  T_EOF,         // End of File
+  // Keywords
+  T_AND,
+  T_CLASS,
+  T_ELSE,
+  T_FALSE,
+  T_FOR,
+  T_FN,
+  T_IF,
+  T_NIL,
+  T_OR,
+  T_PRINT,
+  T_RET,
+  T_SUPER,
+  T_THIS,
+  T_TRUE,
+  T_LET,
+  T_WHILE,
+  T_STR,
+  T_INT,
+  T_BOOL,
+  T_EQUAL,
+  T_NOT_EQUAL,
+  T_GREATER_THAN,
+  T_LESS_THAN,
+  T_GREATER_THAN_OR_EQUAL,
+  T_LESS_THAN_OR_EQUAL,
 } TokenType;
 
-typedef struct Token {
+typedef struct {
   TokenType type;
   char *lexeme;
 } Token;
