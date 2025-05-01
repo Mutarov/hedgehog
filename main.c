@@ -1,9 +1,13 @@
 #include "lexer/lexer.h"
 #include "logging.h"
+#include "vm/chunk.h"
+#include "vm/debug.h"
+#include "vm/vm.h"
 #include <stdio.h>
 #include <stdlib.h>
 
 int main(int argc, char *argv[]) {
+  initVM();
   // Check if the filename is provided
   if (argc < 2) {
     printf("usage: %s file\n", argv[0]);
@@ -42,22 +46,34 @@ int main(int argc, char *argv[]) {
   fclose(f);
 
   // Initialize Lexer
-  Lexer lexer;
-  init_lexer(&lexer, source, argv[1]);
-  lex(&lexer);
+  // Lexer lexer;
+  // init_lexer(&lexer, source, argv[1]);
+  // lex(&lexer);
 
   // Print results
-  L_INFO("file: %s\n", lexer.filename);
-  L_INFO("source: \n%s\n", lexer.source);
-  L_INFO("tokens:\n");
-  for (int i = 0; i < lexer.tokens.used; i++) {
-    printf("\t%d(\"%s\")\n", lexer.tokens.tokens[i].type,
-           lexer.tokens.tokens[i].lexeme);
-  }
+  // L_INFO("file: %s\n", lexer.filename);
+  // L_INFO("source: \n%s\n", lexer.source);
+  // L_INFO("tokens:\n");
+  // for (int i = 0; i < lexer.tokens.used; i++) {
+  //  printf("\t%d(\"%s\")\n", lexer.tokens.tokens[i].type,
+  //         lexer.tokens.tokens[i].lexeme);
+  //}
+
+  Chunk chunk;
+  initChunk(&chunk);
+
+  int constant = addConstant(&chunk, 1.2);
+  writeChunk(&chunk, OP_CONSTANT, 123);
+  writeChunk(&chunk, constant, 123);
+
+  writeChunk(&chunk, OP_RETURN, 123);
+  disassembleChunk(&chunk, "Test Chunk");
+  freeVM();
+  freeChunk(&chunk);
 
   // Clean up
   free(source);
-  free_lexer(&lexer);
+  // free_lexer(&lexer);
 
   return 0; // Success
 }

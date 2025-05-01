@@ -4,9 +4,9 @@
 
 // Structures
 typedef struct {
-  int top;
-  int used;
-  int data[STACK_SIZE]; // Потом вместо int будет Constant
+  int top;              // index of stack top
+  int used;             // used
+  int data[STACK_SIZE]; // data (вам реал нужны какие то обьяснения??)
 } Stack;
 
 // Functions
