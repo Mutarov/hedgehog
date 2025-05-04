@@ -2,6 +2,6 @@
 
 fn main(str args[]) : int {
     str s = args[1];
-    println("\[n]");
+    println("%s", s);
     ret 0;
 }
