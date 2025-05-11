@@ -19,6 +19,7 @@ typedef enum {
   T_STR_LITERAL, // "Sosal?"
   T_INT_LITERAL, // 5
   T_EOF,         // End of File
+  T_ERROR,
   // Keywords
   T_AND,
   T_CLASS,
@@ -61,6 +62,7 @@ typedef struct {
 // INFO: Functions for TokenList
 void init_tokenlist(TokenList *tokenlist);
 void add_token(TokenList *tokenlist, Token token);
+Token pop_token(TokenList *list);
 void free_tokenlist(TokenList *tokenlist);
 void free_token(Token *token);
 #endif

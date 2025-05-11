@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 typedef enum {
   PLUS,
   MINUS,
@@ -23,12 +25,12 @@ typedef struct Node {
       struct Node *left;
       struct Node *right;
     } binop_node;
-    struct literal {
+    struct {
       LiteralType type;
       union {
         int decimal;
       } data;
-    };
+    } literal_node;
   } data;
 } Node;
 

@@ -3,10 +3,6 @@
 
 #define INITIAL_CAPACITY 5
 
-// INFO: @oneon4i is gay
-
-// WARNING: I'll ban you if you answer "no" on question "Sosal?"
-
 const char *keywords[30] = {"for",   "if",      "while", "else", "print",
                             "int",   "fn",      "str",   "bool", "true",
                             "false", "println", "ret"};
@@ -22,13 +18,30 @@ void add_token(TokenList *list, Token token) {
     size_t new_capacity = list->capacity == 0 ? 8 : list->capacity * 2;
     Token *new_tokens = realloc(list->tokens, new_capacity * sizeof(Token));
     if (!new_tokens) {
-      // Handle allocation error
       return;
     }
     list->tokens = new_tokens;
     list->capacity = new_capacity;
   }
   list->tokens[list->used++] = token;
+}
+
+Token pop_token(TokenList *list) {
+  if (list == NULL || list->used == 0) {
+    return (Token){T_ERROR, NULL};
+  }
+
+  Token first = list->tokens[0];
+
+  free(list->tokens[0].lexeme);
+
+  for (size_t i = 1; i < list->used; i++) {
+    list->tokens[i - 1] = list->tokens[i];
+  }
+
+  list->used--;
+
+  return (Token){first.type, NULL};
 }
 
 void free_token(Token *token) {

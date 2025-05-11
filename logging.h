@@ -27,7 +27,7 @@ static int has_color_support() {
 }
 
 static const char *get_current_time() {
-  static char buffer[25];
+  static char buffer[64]; // Увеличиваем размер буфера для безопасности
   time_t t = time(NULL);
   struct tm lt = *localtime(&t);
 
@@ -41,7 +41,7 @@ static const char *get_current_time() {
   offset = lt.tm_gmtoff / 3600;
 #endif
 
-  snprintf(buffer, sizeof(buffer), "%04d-%02d-%02d %02d:%02d:%02d%+d",
+  snprintf(buffer, sizeof(buffer), "%04d-%02d-%02d %02d:%02d:%02d%+03d",
            lt.tm_year + 1900, lt.tm_mon + 1, lt.tm_mday, lt.tm_hour, lt.tm_min,
            lt.tm_sec, offset);
   return buffer;

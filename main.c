@@ -1,5 +1,6 @@
 #include "lexer/lexer.h"
 #include "logging.h"
+#include "parser/parser.h"
 #include "vm/chunk.h"
 #include "vm/debug.h"
 #include "vm/vm.h"
@@ -46,45 +47,50 @@ int main(int argc, char *argv[]) {
   fclose(f);
 
   // Initialize Lexer
-  // Lexer lexer;
-  // init_lexer(&lexer, source, argv[1]);
-  // lex(&lexer);
+  Lexer lexer;
+  init_lexer(&lexer, source, argv[1]);
+  lex(&lexer);
 
   // Print results
-  // L_INFO("file: %s\n", lexer.filename);
-  // L_INFO("source: \n%s\n", lexer.source);
-  // L_INFO("tokens:\n");
-  // for (int i = 0; i < lexer.tokens.used; i++) {
-  //  printf("\t%d(\"%s\")\n", lexer.tokens.tokens[i].type,
-  //         lexer.tokens.tokens[i].lexeme);
-  //}
+  L_INFO("file: %s\n", lexer.filename);
+  L_INFO("source: \n%s\n", lexer.source);
+  L_INFO("tokens:\n");
+  for (int i = 0; i < lexer.tokens.used; i++) {
+    printf("\t%d(\"%s\")\n", lexer.tokens.tokens[i].type,
+           lexer.tokens.tokens[i].lexeme);
+  }
 
-  Chunk chunk;
-  initChunk(&chunk);
+  Parser parser;
+  init_parser(&parser, lexer.tokens);
+  parse(&parser);
+  free_lexer(&lexer);
 
-  int constant = addConstant(&chunk, 1.2);
-  writeChunk(&chunk, OP_CONSTANT, 123);
-  writeChunk(&chunk, constant, 123);
+  // Chunk chunk;
+  // initChunk(&chunk);
 
-  constant = addConstant(&chunk, 3.4);
-  writeChunk(&chunk, OP_CONSTANT, 123);
-  writeChunk(&chunk, constant, 123);
+  // int constant = addConstant(&chunk, 1.2);
+  // writeChunk(&chunk, OP_CONSTANT, 123);
+  // writeChunk(&chunk, constant, 123);
 
-  writeChunk(&chunk, OP_ADD, 123);
+  // constant = addConstant(&chunk, 3.4);
+  // writeChunk(&chunk, OP_CONSTANT, 123);
+  // writeChunk(&chunk, constant, 123);
 
-  constant = addConstant(&chunk, 5.6);
-  writeChunk(&chunk, OP_CONSTANT, 123);
-  writeChunk(&chunk, constant, 123);
+  // writeChunk(&chunk, OP_ADD, 123);
 
-  writeChunk(&chunk, OP_DIVIDE, 123);
+  // constant = addConstant(&chunk, 5.6);
+  // writeChunk(&chunk, OP_CONSTANT, 123);
+  // writeChunk(&chunk, constant, 123);
 
-  writeChunk(&chunk, OP_NEGATE, 123);
+  // writeChunk(&chunk, OP_DIVIDE, 123);
 
-  writeChunk(&chunk, OP_RETURN, 123);
-  disassembleChunk(&chunk, "Test Chunk");
-  interpret(&chunk);
+  // writeChunk(&chunk, OP_NEGATE, 123);
+
+  // writeChunk(&chunk, OP_RETURN, 123);
+  // disassembleChunk(&chunk, "Test Chunk");
+  // interpret(&chunk);
   freeVM();
-  freeChunk(&chunk);
+  // freeChunk(&chunk);
 
   // Clean up
   free(source);
